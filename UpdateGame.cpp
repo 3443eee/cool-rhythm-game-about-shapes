@@ -1,0 +1,47 @@
+#include "UpdateGame.hpp"
+#include "Globals.hpp"
+#include "Letters.hpp"
+#include "raylib.h"
+#include "Player.hpp"
+#include "LoadTextures.hpp"
+#include "ParseLevelFile.hpp"
+#include <chrono>
+#include <thread>
+#include <iostream>
+
+void startGame(int levelID) {
+    in_game = true;
+    game_time = 0;
+    currentLevel = levelID;
+    ParseLevelFile();
+}
+
+// Helper: store last update time
+static std::chrono::high_resolution_clock::time_point lastTime;
+
+void UpdateGame() {
+    if (!in_game) {
+        if (IsKeyPressed(KEY_S)) {
+            startGame(1);
+            lastTime = std::chrono::high_resolution_clock::now(); // reset timer when game starts
+        }
+        return;
+    }
+    
+    // Only count time while in-game
+    auto now = std::chrono::high_resolution_clock::now();
+    auto deltaMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
+    game_time += deltaMs;
+    lastTime = now;
+
+    if (game_time > 1000) ParseLevelFile();
+
+    // --- Handle input ---
+    if (IsKeyDown(KEY_D)) currentLetter = "triangle";
+    if (IsKeyDown(KEY_F)) currentLetter = "square";
+    if (IsKeyDown(KEY_J)) currentLetter = "circle";
+    if (IsKeyDown(KEY_K)) currentLetter = "X";
+    if (IsKeyPressed(KEY_SPACE)) FallingLetter::SpawnCustom(Textures[1], 400, -80);
+
+    FallingLetter::UpdateAll();
+}
