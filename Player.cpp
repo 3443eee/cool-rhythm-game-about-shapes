@@ -18,14 +18,15 @@ void RenderLetter() {
     } else {
         return;
     }
-    float scale = 4.0f;
-    float drawX = (screen_width * 0.18f / 2.0f) - (texture.width * scale / 2.0f);
+
+    float drawX = (screen_width * barThickness / 2.0f) - (texture.width * letterScale / 2.0f);
+    float drawY = screen_height - (screen_width / 2) * barThickness - (texture.height * letterScale / 2.0f);
 
     DrawTextureEx(
         texture,
-        {drawX, screen_height * 0.8f},
+        {drawX, drawY},
         0.0f,
-        scale,
+        letterScale,
         WHITE
     );
 }

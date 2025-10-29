@@ -41,7 +41,8 @@ void UpdateGame() {
     if (IsKeyDown(KEY_F)) currentLetter = "square";
     if (IsKeyDown(KEY_J)) currentLetter = "circle";
     if (IsKeyDown(KEY_K)) currentLetter = "X";
-    if (IsKeyPressed(KEY_SPACE)) FallingLetter::SpawnCustom(Textures[1], 400, -80);
+    if (IsKeyPressed(KEY_SPACE)) FallingLetter::SpawnCustom(Textures[1], 400, screen_width, 1);
+    if (IsKeyPressed(KEY_UP)) FallingLetter::SpawnCustom(Textures[3], 400, -80, 0);
 
     FallingLetter::UpdateAll();
 }

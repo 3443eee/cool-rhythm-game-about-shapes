@@ -61,13 +61,13 @@ void ParseLevelFile() {
     if (spawnTime == 0) return;
     if (game_time >= spawnTime) {
         if (line.find("TRI") != std::string::npos) {
-            FallingLetter::SpawnCustom(Textures[2], 400, -80);
+            FallingLetter::SpawnCustom(Textures[2], 400, -80, 0);
         } else if (line.find("SQR") != std::string::npos) {
-            FallingLetter::SpawnCustom(Textures[3], 400, -80);
+            FallingLetter::SpawnCustom(Textures[3], 400, -80, 0);
         } else if (line.find("CIR") != std::string::npos) {
-            FallingLetter::SpawnCustom(Textures[4], 400, -80);
+            FallingLetter::SpawnCustom(Textures[4], 400, -80, 0);
         } else if (line.find("X") != std::string::npos) {
-            FallingLetter::SpawnCustom(Textures[1], 400, -80);
+            FallingLetter::SpawnCustom(Textures[1], 400, -80, 0);
         }
         currentLine++;
     }

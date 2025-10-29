@@ -10,4 +10,7 @@ extern bool in_game;
 extern int currentLevel;
 extern int game_time;
 
+extern float barThickness;
+extern float letterScale;
+
 #endif
