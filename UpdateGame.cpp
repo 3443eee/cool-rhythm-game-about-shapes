@@ -5,18 +5,22 @@
 #include "Player.hpp"
 #include "LoadTextures.hpp"
 #include "ParseLevelFile.hpp"
+#include "Music.hpp"
 #include <chrono>
 #include <thread>
+#include <string>
 #include <iostream>
+
+using std::string;
 
 void startGame(int levelID) {
     in_game = true;
     game_time = 0;
     currentLevel = levelID;
     ParseLevelFile();
+    playBackgroundMusic(string("Resources/Music/" + std::to_string(currentLevel) + ".mp3").c_str());
 }
 
-// Helper: store last update time
 static std::chrono::high_resolution_clock::time_point lastTime;
 
 void UpdateGame() {
@@ -34,8 +38,9 @@ void UpdateGame() {
     game_time += deltaMs;
     lastTime = now;
 
-    if (game_time > 1000) ParseLevelFile();
-
+    if (game_time > 100 && in_game == true) ParseLevelFile();
+    updateBackgroundMusic();
+    
     // --- Handle input ---
     if (IsKeyDown(KEY_D)) currentLetter = "triangle";
     if (IsKeyDown(KEY_F)) currentLetter = "square";

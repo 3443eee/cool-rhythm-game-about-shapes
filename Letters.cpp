@@ -32,12 +32,13 @@ void FallingLetter::Render() const {
 }
 
 void FallingLetter::Update() {
-    if (vertical)
+    if (vertical) {
         Height += speed * GetFrameTime();
-    else if (horizontal) {
-        Height -= speed * GetFrameTime();
+    } else if (horizontal) {
+        Height += speed * horizontalMultiplier * GetFrameTime();
     }
 }
+
 
 bool FallingLetter::OffScreen() const {
     if (vertical) {
@@ -47,26 +48,30 @@ bool FallingLetter::OffScreen() const {
     }
 }
 
-void FallingLetter::SpawnCustom(const Texture2D& tex, float speed, float startHeight, int direction) {
+void FallingLetter::SpawnCustom(const Texture2D& tex, float startPos, int direction, float timeToReach) {
+    FallingLetter newSprite;
+    newSprite.texture = tex;
+    newSprite.vertical = (direction == 0);
+    newSprite.horizontal = (direction == 1);
+    newSprite.Height = startPos;
+
+    float distance = 0.0f;
+
     if (direction == 0) { // vertical
-        FallingLetter newSprite;
-        newSprite.texture = tex;
-        newSprite.Height = startHeight;
-        newSprite.speed = speed;
-        newSprite.vertical = true;
-        newSprite.horizontal = false;
-        letters.push_back(newSprite);
-        return;
-    } else if (direction == 1) { // horizontal
-        FallingLetter newSprite;
-        newSprite.texture = tex;
-        newSprite.Height = startHeight;
-        newSprite.speed = speed;
-        newSprite.vertical = false;
-        newSprite.horizontal = true;
-        letters.push_back(newSprite);
-        return;
+        distance = (float)screen_height - startPos;
+        newSprite.speed = distance / timeToReach;
+    } else { // horizontal
+        if (startPos < 0) {
+            distance = screen_width - startPos;
+            newSprite.horizontalMultiplier = 1.0f; // move left→right
+        } else {
+            distance = startPos;
+            newSprite.horizontalMultiplier = -1.0f; // move right→left
+        }
+        newSprite.speed = distance / timeToReach;
     }
+
+    letters.push_back(newSprite);
 }
 
 void FallingLetter::UpdateAll() {

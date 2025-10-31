@@ -1,3 +1,6 @@
+# Automatically use all CPU cores for parallel builds
+MAKEFLAGS += -j$(shell nproc)
+
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra
 LIBS = -lraylib -ldl -lm -lpthread -lGL -lrt -lX11

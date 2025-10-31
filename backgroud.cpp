@@ -8,6 +8,14 @@ Texture2D tile;
 float tileScale;
 Rectangle source;
 Rectangle dest;
+
+bool fading = false;
+float fadingTicks = 0;
+float startTick = 0;
+int fadeTime = 0;
+Color targetColor;
+Color startColor;
+
 void InitBackground() {
     tile = LoadTexture("Resources/tile.png");
     SetTextureWrap(tile, TEXTURE_WRAP_REPEAT);
@@ -25,5 +33,28 @@ void InitBackground() {
 
 void DrawBackground() {
     ClearBackground(BG);
+    if (fading) {
+        fadingTicks += GetFrameTime() * 1000.0f;
+        float progress = fadingTicks / fadeTime;
+        if (progress >= 1.0f) {
+            BG = targetColor;
+            fading = false;
+            fadingTicks = 0;
+        } else {
+            BG.r = (unsigned char)(startColor.r + (targetColor.r - startColor.r) * progress);
+            BG.g = (unsigned char)(startColor.g + (targetColor.g - startColor.g) * progress);
+            BG.b = (unsigned char)(startColor.b + (targetColor.b - startColor.b) * progress);
+        }
+    }
+
     DrawTexturePro(tile, source, dest, {0, 0}, 0.0f, WHITE);
-};
+}
+
+
+void SetBackgroundColor(Color color, int ft) {
+    fadeTime = ft;
+    targetColor = color;
+    startColor = BG; // save the color at fade start
+    fading = true;
+    fadingTicks = 0;
+}
