@@ -8,13 +8,14 @@
 class FallingLetter {
 public:
     Texture2D texture;
-    float Height;      // Y for vertical, X for horizontal
+    float Height; 
     float speed;
     bool vertical = false;
     bool horizontal = false;
-
-    // NEW: horizontal movement direction
-    float horizontalMultiplier = -1.0f; // default move left
+    float percentageHidden = 0.0f;
+    float lastScorePercentage = 0.0f;
+    std::string letterType;
+    float horizontalMultiplier = -1.0f; // default move left (1.0f to move right)
 
     static std::vector<FallingLetter> letters;
 

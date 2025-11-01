@@ -5,6 +5,7 @@
 #include "Player.hpp"
 #include "LoadTextures.hpp"
 #include "ParseLevelFile.hpp"
+#include "particleMan.hpp"
 #include "Music.hpp"
 #include <chrono>
 #include <thread>
@@ -13,12 +14,32 @@
 
 using std::string;
 
+bool in_game = false;
+int currentLevel = 0;
+int score = 0;
+int progress = 0;
+int game_time = 0;
+int currentLevelLenght = 0;
+
 void startGame(int levelID) {
     in_game = true;
     game_time = 0;
     currentLevel = levelID;
+    currentLevelLenght = 0;
+    score = 0;
+    progress = 0;
     ParseLevelFile();
     playBackgroundMusic(string("Resources/Music/" + std::to_string(currentLevel) + ".mp3").c_str());
+}
+
+void stopGame() {
+    in_game = false;
+    game_time = 0;
+    currentLevel = 0;
+    currentLevelLenght = 0;
+    score = 0;
+    progress = 0;
+    //stopBackgroundMusic();
 }
 
 static std::chrono::high_resolution_clock::time_point lastTime;
@@ -26,17 +47,26 @@ static std::chrono::high_resolution_clock::time_point lastTime;
 void UpdateGame() {
     if (!in_game) {
         if (IsKeyPressed(KEY_S)) {
-            startGame(1);
+            startGame(2);
             lastTime = std::chrono::high_resolution_clock::now(); // reset timer when game starts
         }
         return;
     }
-    
+    float dt = GetFrameTime();
+    //std::cout << "Game Time: " << game_time << " ms, Progress: " << progress << "%\n";
     // Only count time while in-game
     auto now = std::chrono::high_resolution_clock::now();
     auto deltaMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastTime).count();
     game_time += deltaMs;
     lastTime = now;
+    progress = (int)((float)game_time / (float)currentLevelLenght * 100.0f);
+
+    //std::cout << currentLevelLenght << '\n';
+
+    if (progress >= 100) {
+        stopGame();
+        return;
+    }
 
     if (game_time > 100 && in_game == true) ParseLevelFile();
     updateBackgroundMusic();
@@ -50,4 +80,5 @@ void UpdateGame() {
     if (IsKeyPressed(KEY_UP)) FallingLetter::SpawnCustom(Textures[3], 400, -80, 0);
 
     FallingLetter::UpdateAll();
+    ParticleMan::UpdateAll(dt);
 }

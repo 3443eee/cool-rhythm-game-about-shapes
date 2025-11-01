@@ -16,6 +16,16 @@ int fadeTime = 0;
 Color targetColor;
 Color startColor;
 
+Color brighten(Color c, float factor = 1.2f) {
+    // Multiply RGB channels by factor, clamp to 255
+    return Color{
+        (unsigned char)std::min(int(c.r * factor), 255),
+        (unsigned char)std::min(int(c.g * factor), 255),
+        (unsigned char)std::min(int(c.b * factor), 255),
+        c.a
+    };
+}
+
 void InitBackground() {
     tile = LoadTexture("Resources/tile.png");
     SetTextureWrap(tile, TEXTURE_WRAP_REPEAT);
@@ -46,7 +56,6 @@ void DrawBackground() {
             BG.b = (unsigned char)(startColor.b + (targetColor.b - startColor.b) * progress);
         }
     }
-
     DrawTexturePro(tile, source, dest, {0, 0}, 0.0f, WHITE);
 }
 

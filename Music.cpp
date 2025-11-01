@@ -11,3 +11,7 @@ void playBackgroundMusic(const char* filePath) {
 void updateBackgroundMusic() {
     UpdateMusicStream(backgroundMusic);
 }
+void stopBackgroundMusic() {
+    StopMusicStream(backgroundMusic);
+    UnloadMusicStream(backgroundMusic);
+}

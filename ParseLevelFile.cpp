@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "ParseLevelFile.hpp"
+#include "particleMan.hpp"
 #include "Letters.hpp"
 #include "Globals.hpp"
 #include "LoadTextures.hpp"
@@ -16,6 +17,7 @@ using std::vector;
 
 static vector<string> lines;
 static int currentLine = 0;
+ParticleMan confetti;
 
 // Reads all lines into memory
 vector<string> ReadAllLines(const string& filePath) {
@@ -73,6 +75,22 @@ int extractColorParameter (const string& line, int index) {
     return fadeTime;
 }
 
+int GetLevelLength(const std::vector<std::string>& lines) {
+    int maxTime = 0;
+
+    for (const auto& line : lines) {
+        int spawnTime = extractTime(line);
+        if (spawnTime == -1) continue;
+
+        int duration = 0;
+
+        int lineEnd = spawnTime + duration;
+        if (lineEnd > maxTime) maxTime = lineEnd;
+    }
+
+    return maxTime;
+}
+
 // Main parser logic
 void ParseLevelFile() {
     if (lines.empty()) {
@@ -81,6 +99,10 @@ void ParseLevelFile() {
         return;
     }
 
+    if (currentLevelLenght == 0) {
+        currentLevelLenght = GetLevelLength(lines);
+    }
+    
     if (currentLine >= (int)lines.size()) return;
 
     string line = lines[currentLine];
@@ -100,6 +122,9 @@ void ParseLevelFile() {
             if (fadeTime <= 0) fadeTime = 1000; // default fade time
             SetBackgroundColor(color, fadeTime);
             std::cout << " with fade time: " << fadeTime << "ms\n";
+        } else if (line.find("PAR") != string::npos) {
+            std::cout << "Celebration triggered at time: " << spawnTime << "ms\n";
+            confetti.SpawnCelebration(50);
         } else {
             Texture2D tex;
             int verticalDirection = 0; // top-to-bottom

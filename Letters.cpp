@@ -1,6 +1,7 @@
 #include "Letters.hpp"
 #include "raylib.h"
 #include "Globals.hpp"
+#include "Player.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include "LoadTextures.hpp"
@@ -28,23 +29,66 @@ void FallingLetter::Render() const {
             letterScale,
             WHITE
         );
-    } 
+    }
 }
 
 void FallingLetter::Update() {
+    float frameDistance = speed * GetFrameTime(); // distance moved this frame
+
     if (vertical) {
-        Height += speed * GetFrameTime();
+        Height += frameDistance;
+
+        float scissorBottom = static_cast<float>(screen_height - screen_width * barThickness);
+        float letterTop     = Height - texture.height; // top edge of the letter
+        float letterBottom  = Height;                   // bottom edge
+
+        // How much of the letter is below the scissor line (hidden)
+        float hiddenPixels = std::clamp(letterBottom - scissorBottom, 0.0f, (float)texture.height);
+        percentageHidden   = (hiddenPixels / (float)texture.height) * 100.0f;
+
     } else if (horizontal) {
-        Height += speed * horizontalMultiplier * GetFrameTime();
+        Height += frameDistance * horizontalMultiplier;
+
+        float scissorLeft  = static_cast<float>(screen_width * barThickness);
+        float scissorRight = static_cast<float>(screen_width - screen_width * barThickness);
+
+        float letterLeft  = Height;
+        float letterRight = Height + texture.width;
+
+        float hiddenPixels = 0.0f;
+
+        if (horizontalMultiplier < 0) {
+            // moving left — hidden by left side
+            hiddenPixels = std::clamp(scissorLeft - letterLeft, 0.0f, (float)texture.width);
+        } else {
+            // moving right — hidden by right side
+            hiddenPixels = std::clamp(letterRight - scissorRight, 0.0f, (float)texture.width);
+        }
+
+        percentageHidden = (hiddenPixels / (float)texture.width) * 100.0f;
+    }
+
+    // Give score proportional to newly hidden percentage
+    if (letterType == currentLetter && percentageHidden > lastScorePercentage) {
+        score += static_cast<int>(percentageHidden - lastScorePercentage);
+        lastScorePercentage = percentageHidden;
+    }
+
+    // Reset score tracking once fully hidden or offscreen
+    if (percentageHidden >= 100.0f || OffScreen()) {
+        lastScorePercentage = 0.0f;
+        percentageHidden = 100.0f;
     }
 }
+
+
 
 
 bool FallingLetter::OffScreen() const {
     if (vertical) {
         return Height > screen_height;
     } else {
-        return Height > screen_width;
+        return Height < 0;
     }
 }
 
@@ -55,6 +99,14 @@ void FallingLetter::SpawnCustom(const Texture2D& tex, float startPos, int direct
     newSprite.horizontal = (direction == 1);
     newSprite.Height = startPos;
 
+    if (Textures.empty()) return;
+    if (tex.id == Textures[0].id) return;
+    if (tex.id == Textures[1].id) newSprite.letterType = "X";
+    else if (tex.id == Textures[2].id) newSprite.letterType = "triangle";
+    else if (tex.id == Textures[3].id) newSprite.letterType = "square";
+    else if (tex.id == Textures[4].id) newSprite.letterType = "circle";
+    else newSprite.letterType = "unknown";
+    
     float distance = 0.0f;
 
     if (direction == 0) { // vertical
@@ -63,10 +115,10 @@ void FallingLetter::SpawnCustom(const Texture2D& tex, float startPos, int direct
     } else { // horizontal
         if (startPos < 0) {
             distance = screen_width - startPos;
-            newSprite.horizontalMultiplier = 1.0f; // move left→right
+            newSprite.horizontalMultiplier = 1.0f;
         } else {
             distance = startPos;
-            newSprite.horizontalMultiplier = -1.0f; // move right→left
+            newSprite.horizontalMultiplier = -1.0f;
         }
         newSprite.speed = distance / timeToReach;
     }
@@ -78,9 +130,10 @@ void FallingLetter::UpdateAll() {
     for (auto &l : letters)
         l.Update();
 
+    // Remove letters that are fully offscreen
     letters.erase(std::remove_if(letters.begin(), letters.end(),
                                  [](const FallingLetter &l){ 
-                                     return l.OffScreen();
+                                     return l.OffScreen(); // offscreen letters are gone
                                  }),
                   letters.end());
 }
